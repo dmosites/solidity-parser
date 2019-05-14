@@ -185,13 +185,13 @@ IdentifierPart
 
 AddressPayable
   = "address" __  PayableToken {
-      return {
-        type: "Identifier",
-        name: "address_payable",
-        start: location().start.offset,
-        end: location().end.offset
-      };
-    }
+    return {
+      type: "Identifier",
+      name: "address_payable",
+      start: location().start.offset,
+      end: location().end.offset
+    };
+  }
 
 UnicodeLetter
   = Lu
@@ -470,6 +470,7 @@ AnonymousToken  = "anonymous"  !IdentifierPart
 ABIEncoderV2Token = "ABIEncoderV2" !IdentifierPart
 AsToken         = "as"         !IdentifierPart
 BreakToken      = "break"      !IdentifierPart
+CalldataToken   = "calldata"   !IdentifierPart
 ClassToken      = "class"      !IdentifierPart
 ConstantToken   = "constant"   !IdentifierPart
 ConstructorToken = "constructor" !IdentifierPart
@@ -731,6 +732,7 @@ VisibilitySpecifier
 StorageLocationSpecifier
   = StorageToken
   / MemoryToken
+  / CalldataToken
 
 StateVariableSpecifiers
   = specifiers:(VisibilitySpecifier __ ConstantToken?){
@@ -1009,6 +1011,7 @@ Statement
   / ReturnStatement
   / ThrowStatement
   / UsingStatement
+  / FunctionDeclaration
 
 Block
   = "{" __ body:(StatementList __)? "}" {
@@ -1537,7 +1540,7 @@ CommaSeparatedModifierNameList
     }
 
 InformalParameter
-  = type:Type __ isindexed:IndexedToken? __ isconstant:ConstantToken? __ isstorage:StorageToken? __ ismemory:MemoryToken? __ id:Identifier?
+  = type:Type __ isindexed:IndexedToken? __ isconstant:ConstantToken? __ isstorage:StorageToken? __ ismemory:MemoryToken? __ iscalldata:CalldataToken? __ id:Identifier?
   {
     return {
       type: "InformalParameter",
@@ -1547,6 +1550,7 @@ InformalParameter
       is_storage: isconstant != null,
       is_storage: isstorage != null,
       is_memory: ismemory != null,
+      is_calldata: iscalldata != null,
       start: location().start.offset,
       end: location().end.offset
     };
@@ -1658,6 +1662,7 @@ AssemblyItem
   / AssemblySwitch
   / AssemblyFunctionDefinition
   / AssemblyFor
+  / AssemblyIf
   / AssemblyLiteral
   / Identifier
 
@@ -1721,6 +1726,9 @@ AssemblyFunctionDefinition
 AssemblyFor
   = 'for' __ ( InlineAssemblyBlock / AssemblyExpression )
      __ AssemblyExpression __ ( InlineAssemblyBlock / AssemblyExpression ) __ InlineAssemblyBlock
+
+AssemblyIf
+  = 'if' __ FunctionalAssemblyInstruction __ InlineAssemblyBlock
 
 ReturnOpCode
   = 'return' {
